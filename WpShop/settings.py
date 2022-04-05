@@ -54,11 +54,12 @@ INSTALLED_APPS = [
     'reversion',
     'rest_framework',
     'django_filters',
-    'corsheaders',
-    'rest_framework.authtoken',
+    'corsheaders',  # 支持跨域
+    'rest_framework.authtoken',  # token登录需要使用这个应用
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # 支持跨域
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -148,9 +149,38 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',  # 使用过滤器前必须配置
-    )
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication'  # 通过jwt来认证
+    ],
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',  # 当权限验证不通过时，就不返回数据
+    ),
 }
+
+# 支持跨域
+CORS_ORIGIN_ALLOW_ALL = True
+
+# 设置Token有效时间
+import datetime
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+}
+
+# 用于做jwt登录的验证
+AUTHENTICATION_BACKENDS = (
+    'users.views.CustomBackend',
+)
+
+# 云片网设置
+APIKEY = "750491da91aaa41e4cdecf722629117b"
+
+# 手机号码正则表达式
+REGEX_MOBILE = "^1[358]\d{9}$|^147\d{8}$|^176\d{8}$"

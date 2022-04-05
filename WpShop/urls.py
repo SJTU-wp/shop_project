@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path, include
+from rest_framework.authtoken import views
 from rest_framework.routers import DefaultRouter
+from rest_framework_jwt.views import obtain_jwt_token
 
 import xadmin
 from goods.views import GoodsListViewSet, CategoryViewset
+from users.views import UserViewset, SmsCodeViewset
 
 xadmin.autodiscover()
 from xadmin.plugins import xversion
@@ -30,6 +33,8 @@ from django.views.static import serve
 router = DefaultRouter()
 router.register(r'goods', GoodsListViewSet, base_name='goods')
 router.register(r'categorys', CategoryViewset, base_name="categorys")
+router.register(r'users', UserViewset, base_name="users")
+router.register(r'codes', SmsCodeViewset, base_name="codes")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,5 +42,7 @@ urlpatterns = [
     # 下面的配置是为了django支持静态资源图片的加载
     re_path(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
     path('api-auth/', include('rest_framework.urls')),
+    re_path(r'^api-token-auth/', views.obtain_auth_token),  # 理解token，向这个url post我们的用户名和密码就会返回我们的token
+    path('login/', obtain_jwt_token),  # 理解jwt
     path('', include(router.urls)),
 ]

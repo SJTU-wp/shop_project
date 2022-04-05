@@ -3,7 +3,9 @@
 # Create your views here.
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters
+# from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.viewsets import ModelViewSet
 
 from goods.filters import GoodsFilter
 from goods.models import Goods, GoodsCategory
@@ -28,6 +30,8 @@ class GoodsListViewSet(viewsets.ReadOnlyModelViewSet):
     #     return queryset
     queryset = Goods.objects.all()
     serializer_class = GoodsSerializer
+
+    # authentication_classes = (TokenAuthentication,)
     pagination_class = GoodsPagination
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
