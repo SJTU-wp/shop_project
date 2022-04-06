@@ -5,14 +5,13 @@ from datetime import timedelta
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
-
 from users.models import VerifyCode
 import re
+
 User = get_user_model()
 from WpShop.settings import REGEX_MOBILE
 
 
-#
 class SmsSerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=11)
 
@@ -21,15 +20,15 @@ class SmsSerializer(serializers.Serializer):
         验证手机号码
         """
 
-        # 手机是否注册
+        # 手机是否注册（存在）
         if User.objects.filter(mobile=mobile).count():
             raise serializers.ValidationError("用户已经存在")
 
-        # 验证手机号码是否合法
+        # 验证手机号码是否合法（合理）
         if not re.match(REGEX_MOBILE, mobile):
             raise serializers.ValidationError("手机号码非法")
 
-        # 验证码发送频率
+        # 验证码发送频率（其他）
         one_minutes_ago = datetime.now() - timedelta(hours=0, minutes=1, seconds=0)
         if VerifyCode.objects.filter(add_time__gt=one_minutes_ago, mobile=mobile).count():
             raise serializers.ValidationError("距离上一次发送未超过60s")
@@ -100,3 +99,12 @@ class UserRegSerializer(serializers.ModelSerializer):
         model = User
         # 这里一般是和前端对应，当然通过validate可以操作，这里写的字段我们直接访问链接时都会呈现
         fields = ("username", "code", "mobile", "password")
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """
+    用户信息详情序列化类
+    """
+    class Meta:
+        model = User
+        fields = ("name", "gender", "birthday", "email", "mobile")  # 与前端对应

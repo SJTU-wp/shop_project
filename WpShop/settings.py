@@ -156,13 +156,14 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         # 'rest_framework.authentication.TokenAuthentication',
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication'  # 通过jwt来认证
     ],
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',  # 当权限验证不通过时，就不返回数据
-    ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',  # 当权限验证不通过时，就不返回数据；首先必须完成注册
+    # ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.AutoSchema',
 }
 
 # 支持跨域
@@ -180,7 +181,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # 云片网设置
-APIKEY = "750491da91aaa41e4cdecf722629117b"
+APIKEY = "w750491da91aaa41e4cdecf722629117bp"  # 注意
 
 # 手机号码正则表达式
 REGEX_MOBILE = "^1[358]\d{9}$|^147\d{8}$|^176\d{8}$"

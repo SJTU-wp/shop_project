@@ -5,10 +5,11 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework import viewsets, status
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 
 from .models import VerifyCode
+from .permissions import IsOwnerOrNone
 
 User = get_user_model()
 
@@ -27,15 +28,16 @@ class CustomBackend(ModelBackend):
             return None
 
 
-from .serializers import UserRegSerializer, SmsSerializer
+from .serializers import UserRegSerializer, SmsSerializer, UserDetailSerializer
 from rest_framework_jwt.serializers import jwt_encode_handler, jwt_payload_handler
 
 
-class UserViewset(CreateModelMixin, viewsets.GenericViewSet):
+class UserViewset(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     """
-    用户
+    用户注册，用户详情展示，用户信息修改
     """
-    serializer_class = UserRegSerializer
+    queryset = User.objects.all()
+    serializer_class = UserRegSerializer  # 用户注册 序列化类
 
     def perform_create(self, serializer):
         return serializer.save()
@@ -59,6 +61,28 @@ class UserViewset(CreateModelMixin, viewsets.GenericViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(re_dict, status=status.HTTP_201_CREATED, headers=headers)
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return UserRegSerializer
+        # elif self.action == "retrieve":
+        #     return UserDetailSerializer
+
+        return UserDetailSerializer
+
+    # 注册与详情要分开，因为用户没注册我们不能验证他们的权限
+    def get_permissions(self):
+        if self.action == "create":
+            return []
+        # elif self.action == "retrieve":
+        #     return [IsOwnerOrNone()]
+
+        return [IsOwnerOrNone()]  # 注册时不用验证，其余均需验证
+
+    # 多余操作：重写该方法可以于细微处减少程序运行时间
+    # # create函数在进行注册时，登录后只给我们返回了用户名和Token，并没有给我们用户的id
+    # def get_object(self):
+    #     return self.request.user
 
 
 from random import choice
