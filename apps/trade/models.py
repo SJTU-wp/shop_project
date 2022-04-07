@@ -37,7 +37,7 @@ class ShoppingCart(models.Model):
 
 class OrderInfo(models.Model):
     """
-    订单
+    订单信息
     """
     ORDER_STATUS = (
         ("TRADE_SUCCESS", "成功"),
@@ -67,7 +67,7 @@ class OrderInfo(models.Model):
         max_length=30,
         verbose_name="订单状态")
     post_script = models.CharField(max_length=200, verbose_name="订单留言")
-    order_mount = models.FloatField(default=0.0, verbose_name="订单金额")
+    order_amount = models.FloatField(default=0.0, verbose_name="订单金额")
     pay_time = models.DateTimeField(null=True, blank=True, verbose_name="支付时间")
 
     # 用户信息

@@ -5,9 +5,9 @@ from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticated
 
-from .models import UserFav, UserLeavingMessage
+from .models import UserFav, UserLeavingMessage, UserAddress
 from .permissions import IsOwnerOrNone
-from .serializers import UserFavSerializer, UserFavDetailSerializer, LeavingMessageSerializer
+from .serializers import UserFavSerializer, UserFavDetailSerializer, LeavingMessageSerializer, AddressSerializer
 
 
 # 添加收藏，删除收藏；ListModelMixin是列表页的get，RetrieveModelMixin是详情页的get
@@ -63,3 +63,28 @@ class LeavingMessageViewset(mixins.ListModelMixin, mixins.CreateModelMixin,
         :return:
         """
         return UserLeavingMessage.objects.filter(user=self.request.user)
+
+
+class AddressViewset(viewsets.ModelViewSet):
+    """
+    收货地址管理
+    list:
+        获取收货地址
+    retrieve:
+        获取收货地址（detail）
+    create:
+        添加收货地址
+    update:
+        更新收货地址
+    delete:
+        删除收货地址
+    """
+    permission_classes = (IsAuthenticated, IsOwnerOrNone)  # 其实之后的重写get_queryset也可以实现非owner不可见的功能
+    serializer_class = AddressSerializer
+
+    def get_queryset(self):
+        """
+        每个用户只能看到自己的地址列表
+        :return:
+        """
+        return UserAddress.objects.filter(user=self.request.user)

@@ -21,7 +21,8 @@ from rest_framework_jwt.views import obtain_jwt_token
 
 import xadmin
 from goods.views import GoodsListViewSet, CategoryViewset
-from user_operation.views import UserFavViewset, LeavingMessageViewset
+from trade.views import ShoppingCartViewset, OrderViewset
+from user_operation.views import UserFavViewset, LeavingMessageViewset, AddressViewset
 from users.views import UserViewset, SmsCodeViewset
 
 xadmin.autodiscover()
@@ -39,6 +40,12 @@ router.register(r'users', UserViewset, base_name="users")
 router.register(r'codes', SmsCodeViewset, base_name="codes")
 router.register(r'userfavs', UserFavViewset, base_name="userfavs")
 router.register(r'messages', LeavingMessageViewset, base_name="messages")
+# 用户地址
+router.register(r'address', AddressViewset, base_name="address")
+# 购物车url
+router.register(r'shopcarts', ShoppingCartViewset, base_name="shopcarts")
+# 订单相关url
+router.register(r'orders', OrderViewset, base_name="orders")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
