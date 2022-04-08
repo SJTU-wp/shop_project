@@ -97,9 +97,9 @@ WSGI_APPLICATION = 'WpShop.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': "wpshop",
+        'NAME': "wpshop1",
         'USER': 'root',
-        'PASSWORD': "151508",
+        'PASSWORD': "qwertyuiop",
         'HOST': "localhost",
         'PORT': 3306,
         "OPTIONS": {"init_command": "SET default_storage_engine=INNODB;"}
@@ -185,3 +185,7 @@ APIKEY = "w750491da91aaa41e4cdecf722629117bp"  # 注意
 
 # 手机号码正则表达式
 REGEX_MOBILE = "^1[358]\d{9}$|^147\d{8}$|^176\d{8}$"
+
+# 支付宝相关配置
+private_key_path = os.path.join(BASE_DIR, 'apps/trade/keys/private_2048')
+ali_pub_key_path = os.path.join(BASE_DIR, 'apps/trade/keys/alipay_key_2048')

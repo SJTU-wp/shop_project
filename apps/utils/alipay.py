@@ -126,36 +126,37 @@ class AliPay(object):
         message = "&".join(u"{}={}".format(k, v) for k, v in unsigned_items)
         return self._verify(message, signature)
 
-#拿到支付宝返回给我们的url，进行解析，为了防止黑客截获，
 
+# 测试代码
+# 拿到支付宝返回给我们的url，进行解析，为了防止黑客截获
 if __name__ == "__main__":
-    IP="47.115.45.50:8000"#你要改
+    IP = "34.210.197.159:8000"  # 云服务器公网IP
     return_url = 'http://'+IP+'/alipay/return/?charset=utf-8&out_trade_n=20191115999&method=alipay.trade.page.pay.return&total_amount=100.00&sign=K1QkuZEX5nQDHzL%2BuCh3chDLesPXWyqmA2Trc5IYbH06jqUfAUle8mezNAFcGld6Lcv4KKXlwAs7a84y3yoYdjl7nxWaxk4sif%2F1DsWT6FvLJQsCjc8hsiE%2BDHLoeaiiHtJ9LsmYDtKyT4vUcg3yA3b3Q%2B4ybejLBQRjlu9r4WtlxO3oaloE880Ujwq4TthnVWzzeWMdIKdacCnnYVI9Fc2H1RdxfTQtRHXEWWW2dCBe5e4BzYOD7i4DQBYPtA4lFM%2FcTY700t0%2B7etjSzC5fS8l%2B6IO3Ea393UWVAvmJkzfYj9wRapai4qMh9KdR%2BEiGsBkXnl7lfXz9o767QQPOA%3D%3D&trade_no=2019111522001490421000021393&auth_app_id=2016101400687743&version=1.0&app_id=2016101400687743&sign_type=RSA2&seller_id=2088102179599265&timestamp=2019-11-15+17%3A08%3A40'
     o = urlparse(return_url)
     query = parse_qs(o.query)
     processed_query = {}
     ali_sign = query.pop("sign")[0]
 
-
+    # body parts
     alipay = AliPay(
-        appid="2016101400687743",#放入我们的应用ID,你要改
-        app_notify_url="http://"+IP+"/alipay/return/",#异步的请求接收接口，就是用户扫描后，没支付，然后再次打开支付宝去支付
+        appid="2021000119658870",  # 放入自己的应用ID
+        app_notify_url="http://"+IP+"/alipay/return/",  # 异步的请求接收接口，就是用户扫描后，没支付，然后再次打开支付宝去支付
         app_private_key_path="../trade/keys/private_2048",
-        alipay_public_key_path="../trade/keys/alipay_key_2048",  # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
-        debug=True,  # 默认False,
+        alipay_public_key_path="../trade/keys/alipay_key_2048",  # 支付宝的公钥，验证支付宝回传消息使用，注意不是自己的公钥
+        debug=True,  # 默认False
         return_url="http://"+IP+"/alipay/return/"
     )
 
     for key, value in query.items():
         processed_query[key] = value[0]
-    print (alipay.verify(processed_query, ali_sign))
+    print(alipay.verify(processed_query, ali_sign))
 
     url = alipay.direct_pay(
-        subject="20200515163741149",#改成自己的订单ID
-        out_trade_no="20200515163741149",#随便写一个测试用
+        subject="20220515163741149",  # 自己的订单ID
+        out_trade_no="20220515163741149",  # 测试时可以随便写一个测试用
         total_amount=100,
-        return_url="http://"+IP+"/alipay/return/"#支付完成后跳回的页面
-    )#我们要把这个url拿到我们的alipay的url中
+        return_url="http://"+IP+"/alipay/return/"  # 支付完成后跳回的页面
+    )  # 我们要把这个url拿到我们的alipay的url中
     re_url = "https://openapi.alipaydev.com/gateway.do?{data}".format(data=url)
 
     print(re_url)
