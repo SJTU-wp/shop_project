@@ -76,6 +76,8 @@ class OrderViewset(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             order_goods.goods_num = shop_cart.nums
             order_amount += order_goods.goods.shop_price * shop_cart.nums
             order_goods.order = order
+            # 生成订单的时候，库存要减去相应数量
+            order_goods.goods.goods_num -= order_goods.goods_num
             # 订单商品信息保存
             order_goods.save()
             # 清空购物车
@@ -96,6 +98,9 @@ from datetime import datetime
 
 
 class AlipayView(APIView):
+    """
+    验签部分代码：可复用
+    """
     server_ip = "34.210.197.159:8000"  # 云服务器公网IP
     alipay = AliPay(
         appid="2021000119658870",
@@ -105,7 +110,7 @@ class AlipayView(APIView):
         alipay_public_key_path=ali_pub_key_path,  # 支付宝的公钥，验证支付宝回传消息使用，注意不是自己的公钥
         debug=True,  # 默认False，True为开发者模式
         return_url="http://" + server_ip + "/alipay/return/"
-    )
+    )  # 生成对象，直接将其作为类属性
 
     def get(self, request):
         """
@@ -114,14 +119,15 @@ class AlipayView(APIView):
         :return:
         """
         processed_dict = {}
-        for key, value in request.GET.items():
+        for key, value in request.GET.items():  # 同步请求的消息在GET里面
             processed_dict[key] = value
 
         sign = processed_dict.pop("sign", None)
 
-        verify_re = self.alipay.verify(processed_dict, sign)
+        verify_re = self.alipay.verify(processed_dict, sign)  # 验签，类似alipay.py中的相应部分
         # 这里可以调试看一下，如果verify_re为真，说明验证成功
         if verify_re is True:
+            # 为什么注释掉这一部分？这是未改版前的支付宝，现在：支付宝的同步请求(get)不再含有支付成功的状态信息
             # order_sn = processed_dict.get('out_trade_no', None)  # 订单号
             # trade_no = processed_dict.get('trade_no', None)  # 支付宝交易号
             # trade_status = processed_dict.get('trade_status', None)  # 交易状态
@@ -133,12 +139,12 @@ class AlipayView(APIView):
             #     existed_order.pay_time = datetime.now()
             #     existed_order.save()
 
-            # 订单没支付，跳转到支付页面
+            # 验签通过，订单没支付？跳转到支付页面
             response = redirect("/index/#/app/home/member/order")
             # response.set_cookie("nextPath","pay", max_age=3)
             return response
         else:
-            # 订单支付，跳转到首页
+            # 验签不通过，订单支付？跳转到首页
             response = redirect("/index")
             return response
 
@@ -150,7 +156,7 @@ class AlipayView(APIView):
         """
         processed_dict = {}
 
-        for key, value in request.POST.items():
+        for key, value in request.POST.items():  # 异步请求的消息在POST里面
             processed_dict[key] = value
 
         sign = processed_dict.pop("sign", None)
@@ -158,9 +164,9 @@ class AlipayView(APIView):
         verify_re = self.alipay.verify(processed_dict, sign)
 
         if verify_re is True:
-            order_sn = processed_dict.get('out_trade_no', None)  # 我们的订单
-            trade_no = processed_dict.get('trade_no', None)  # 阿里会生成一个交易号
-            trade_status = processed_dict.get('trade_status', None)
+            order_sn = processed_dict.get('out_trade_no', None)  # 我们的订单，订单号为什么赋了out_trade_no呢？
+            trade_no = processed_dict.get('trade_no', None)  # 阿里那边会随机生成一个交易号
+            trade_status = processed_dict.get('trade_status', None)  # 交易状态
 
             existed_orders = OrderInfo.objects.filter(order_sn=order_sn)
 
@@ -169,6 +175,7 @@ class AlipayView(APIView):
                 order_goods = existed_order.goods.all()
                 for order_good in order_goods:
                     goods = order_good.goods
+                    # 支付后，销量增加
                     goods.sold_num += order_good.goods_num
                     goods.save()
 
@@ -178,4 +185,3 @@ class AlipayView(APIView):
                 existed_order.save()
 
             return Response("success")  # 要给阿里response一个success，否则它会一直给我们消息
-

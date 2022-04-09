@@ -21,7 +21,7 @@ from rest_framework_jwt.views import obtain_jwt_token
 
 import xadmin
 from goods.views import GoodsListViewSet, CategoryViewset
-from trade.views import ShoppingCartViewset, OrderViewset
+from trade.views import ShoppingCartViewset, OrderViewset, AlipayView
 from user_operation.views import UserFavViewset, LeavingMessageViewset, AddressViewset
 from users.views import UserViewset, SmsCodeViewset
 
@@ -56,5 +56,6 @@ urlpatterns = [
     re_path(r'^api-token-auth/', views.obtain_auth_token),  # 理解token，向这个url post我们的用户名和密码就会返回我们的token
     path('login/', obtain_jwt_token),  # 理解jwt
     path('docs/', include_docs_urls(title="我的商城")),  # drf的api文档自动生成
+    re_path(r'^alipay/return/', AlipayView.as_view(), name="alipay"),
     path('', include(router.urls)),
 ]

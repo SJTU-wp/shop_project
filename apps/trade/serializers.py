@@ -3,8 +3,11 @@
 import time
 
 from rest_framework import serializers
+
+from WpShop.settings import private_key_path, ali_pub_key_path
 from goods.serializers import GoodsSerializer
 from goods.models import Goods
+from utils.alipay import AliPay
 from .models import ShoppingCart, OrderInfo, OrderGoods
 
 
@@ -97,6 +100,34 @@ class OrderSerializer(serializers.ModelSerializer):
         attrs["order_sn"] = self.generate_order_sn()
         return attrs
 
+    alipay_url = serializers.SerializerMethodField(read_only=True)
+
+    def get_alipay_url(self, obj):
+        """
+        前端拿到支付宝支付链接
+        :param obj:
+        :return:
+        """
+        server_ip = "34.210.197.159"  # 云服务器公网IP
+        alipay = AliPay(
+            appid="2021000119658870",
+            # app_notify_url="http://127.0.0.1:8000/alipay/return/",
+            app_notify_url="http://" + server_ip + ":8000/alipay/return/",
+            app_private_key_path=private_key_path,
+            alipay_public_key_path=ali_pub_key_path,  # 支付宝的公钥，验证支付宝回传消息使用
+            debug=True,  # 默认False
+            return_url="http://" + server_ip + ":8000/alipay/return/"
+        )
+
+        url = alipay.direct_pay(
+            subject=obj.order_sn,
+            out_trade_no=obj.order_sn,
+            total_amount=obj.order_mount,
+        )
+        re_url = "https://openapi.alipaydev.com/gateway.do?{data}".format(data=url)
+
+        return re_url  # 没有将这个url存到表里，但前端需要时后端可以提供
+
     class Meta:
         model = OrderInfo
         fields = "__all__"
@@ -114,6 +145,36 @@ class OrderGoodsDetailSerializer(serializers.ModelSerializer):
 # 用来显示订单详情
 class OrderDetailSerializer(serializers.ModelSerializer):
     goods = OrderGoodsDetailSerializer(many=True)  # 一个订单id可以有多个商品
+
+    # 同上。因为在Detail下面也有个支付按钮，所以也要在该序列化类下写以下方法
+    # SerializerMethodField？ get+字段名称  字段得到的值就是以下get_alipay_url方法返回的值；该字段不需要在数据库中有，model类中可以没有
+    alipay_url = serializers.SerializerMethodField(read_only=True)
+
+    def get_alipay_url(self, obj):
+        """
+        前端拿到支付宝支付链接（生成url的方法）
+        :param obj:
+        :return:
+        """
+        server_ip = "34.210.197.159"  # 云服务器公网IP
+        alipay = AliPay(
+            appid="2021000119658870",
+            # app_notify_url="http://127.0.0.1:8000/alipay/return/",
+            app_notify_url="http://" + server_ip + ":8000/alipay/return/",
+            app_private_key_path=private_key_path,
+            alipay_public_key_path=ali_pub_key_path,  # 支付宝的公钥，验证支付宝回传消息使用
+            debug=True,  # 默认False
+            return_url="http://" + server_ip + ":8000/alipay/return/"
+        )
+
+        url = alipay.direct_pay(
+            subject=obj.order_sn,
+            out_trade_no=obj.order_sn,
+            total_amount=obj.order_mount,
+        )
+        re_url = "https://openapi.alipaydev.com/gateway.do?{data}".format(data=url)
+
+        return re_url  # 没有将这个url存到表里，但前端需要时后端可以提供
 
     class Meta:
         model = OrderInfo
