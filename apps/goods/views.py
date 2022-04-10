@@ -2,14 +2,14 @@
 
 # Create your views here.
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, mixins
 # from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.viewsets import ModelViewSet
 
 from goods.filters import GoodsFilter
-from goods.models import Goods, GoodsCategory
-from goods.serializers import GoodsSerializer, CategorySerializer
+from goods.models import Goods, GoodsCategory, Banner
+from goods.serializers import GoodsSerializer, CategorySerializer, BannerSerializer, IndexCategorySerializer
 
 
 class GoodsPagination(PageNumberPagination):
@@ -51,3 +51,20 @@ class CategoryViewset(viewsets.ReadOnlyModelViewSet):
     """
     queryset = GoodsCategory.objects.filter(category_type=1)
     serializer_class = CategorySerializer
+
+
+class BannerViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    获取轮播图列表
+    """
+    queryset = Banner.objects.all().order_by("index")
+    serializer_class = BannerSerializer
+
+
+class IndexCategoryViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    首页商品分类数据（主要是序列化类写得复杂）
+    """
+    # is_tab等于True就是顶部的快捷标签显示那些，我们这里就显示那些
+    queryset = GoodsCategory.objects.filter(is_tab=True, name__in=["生鲜食品", "酒水饮料"])
+    serializer_class = IndexCategorySerializer

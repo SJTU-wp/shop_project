@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path, include
+from django.views.generic import TemplateView
 from rest_framework.authtoken import views
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
 
 import xadmin
-from goods.views import GoodsListViewSet, CategoryViewset
+from goods.views import GoodsListViewSet, CategoryViewset, BannerViewset, IndexCategoryViewset
 from trade.views import ShoppingCartViewset, OrderViewset, AlipayView
 from user_operation.views import UserFavViewset, LeavingMessageViewset, AddressViewset
 from users.views import UserViewset, SmsCodeViewset
@@ -46,6 +47,10 @@ router.register(r'address', AddressViewset, base_name="address")
 router.register(r'shopcarts', ShoppingCartViewset, base_name="shopcarts")
 # 订单相关url
 router.register(r'orders', OrderViewset, base_name="orders")
+# 轮播功能
+router.register(r'banners', BannerViewset, base_name="banners")
+# 首页商品系列数据
+router.register(r'indexgoods', IndexCategoryViewset, base_name="indexgoods")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -57,5 +62,7 @@ urlpatterns = [
     path('login/', obtain_jwt_token),  # 理解jwt
     path('docs/', include_docs_urls(title="我的商城")),  # drf的api文档自动生成
     re_path(r'^alipay/return/', AlipayView.as_view(), name="alipay"),
+    # 简单发布后用户访问到的首页
+    re_path(r'^index/', TemplateView.as_view(template_name="index.html"), name="index"),
     path('', include(router.urls)),
 ]

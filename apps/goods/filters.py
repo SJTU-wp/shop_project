@@ -13,4 +13,4 @@ class GoodsFilter(filters.FilterSet):
 
     class Meta:
         model = Goods
-        fields = ['min_price', 'max_price', 'name', 'is_hot']
+        fields = ['min_price', 'max_price', 'name', 'is_hot', 'is_new']

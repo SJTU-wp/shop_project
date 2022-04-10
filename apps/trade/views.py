@@ -69,12 +69,12 @@ class OrderViewset(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         # 拿到购物车中的信息
         shop_carts = ShoppingCart.objects.filter(user=self.request.user)
         # 遍历购物车
-        order_amount = 0
+        order_mount = 0
         for shop_cart in shop_carts:
             order_goods = OrderGoods()
             order_goods.goods = shop_cart.goods
             order_goods.goods_num = shop_cart.nums
-            order_amount += order_goods.goods.shop_price * shop_cart.nums
+            order_mount += order_goods.goods.shop_price * shop_cart.nums
             order_goods.order = order
             # 生成订单的时候，库存要减去相应数量
             order_goods.goods.goods_num -= order_goods.goods_num
@@ -84,8 +84,8 @@ class OrderViewset(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             shop_cart.delete()
 
         # 把我们自己算出的订单金额保存进去——防黑客攻击，传递虚假金额
-        print(order_amount)
-        order.order_amount = order_amount
+        print(order_mount)
+        order.order_mount = order_mount
         order.save()
 
         return order
