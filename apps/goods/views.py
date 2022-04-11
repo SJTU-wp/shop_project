@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, mixins
 # from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from goods.filters import GoodsFilter
@@ -40,6 +41,14 @@ class GoodsListViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['name', 'goods_brief', 'goods_desc']
 
     ordering_fields = ['sold_num', 'shop_price']
+
+    # 重写retrieve方法：增加商品点击数
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.click_num += 1  # 对点击数加1并保存
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class CategoryViewset(viewsets.ReadOnlyModelViewSet):

@@ -46,6 +46,20 @@ class UserFavViewset(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Retr
 
         return UserFavSerializer
 
+    # 添加收藏时增加收藏数
+    def perform_create(self, serializer):
+        instance = serializer.save()  # 得到serializer
+        goods = instance.goods
+        goods.fav_num += 1  # 对收藏数加1
+        goods.save()
+
+    # 取消收藏时减少收藏数
+    def perform_destroy(self, instance):
+        goods = instance.goods
+        goods.fav_num -= 1  # 对收藏数减1
+        goods.save()
+        instance.delete()
+
 
 class LeavingMessageViewset(mixins.ListModelMixin, mixins.CreateModelMixin,
                             mixins.DestroyModelMixin, viewsets.GenericViewSet):

@@ -90,6 +90,15 @@ class OrderViewset(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
         return order
 
+    # 删除订单，库存恢复
+    def perform_destroy(self, instance):
+        goods = instance.goods
+        goods.goods_num += instance.goods_num
+        goods.save()
+        instance.delete()
+
+    # 订单设置不允许修改
+
 
 from utils.alipay import AliPay
 from WpShop.settings import ali_pub_key_path, private_key_path
