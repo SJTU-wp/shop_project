@@ -6,11 +6,12 @@ from rest_framework import viewsets, filters, mixins
 # from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+# from rest_framework.viewsets import ModelViewSet
 
 from goods.filters import GoodsFilter
 from goods.models import Goods, GoodsCategory, Banner
 from goods.serializers import GoodsSerializer, CategorySerializer, BannerSerializer, IndexCategorySerializer
+from rest_framework_extensions.cache.mixins import CacheResponseMixin
 
 
 class GoodsPagination(PageNumberPagination):
@@ -19,7 +20,7 @@ class GoodsPagination(PageNumberPagination):
     page_query_param = "p"
 
 
-class GoodsListViewSet(viewsets.ReadOnlyModelViewSet):
+class GoodsListViewSet(CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     """
     这么少的代码，实现了 商品列表，分页，搜索，过滤，排序
     """

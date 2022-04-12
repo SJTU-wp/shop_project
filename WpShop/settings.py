@@ -194,3 +194,18 @@ ali_pub_key_path = os.path.join(BASE_DIR, 'apps/trade/keys/alipay_key_2048')
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
+
+REST_FRAMEWORK_EXTENSIONS = {
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 15
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
